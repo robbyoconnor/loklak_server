@@ -1,5 +1,5 @@
-FROM alpine:latest
-LABEL MAINTAINER="ansgar.schmidt@gmx.net"
+FROM openjdk:8-alpine
+LABEL maintainer="Ansgar Schmidt <ansgar.schmidt@gmx.net>"
 
 # setup locales
 ENV LANG=en_US.UTF-8
@@ -21,16 +21,12 @@ ADD settings.gradle /loklak_server/
 ADD test/queries /loklak_server/test/queries/
 
 # install OpenJDK 8 JDK, Ant, and Bash
-RUN apk update && apk add openjdk8 git bash && \
+RUN apk update && apk add --no-cace git bash && \
     # compile loklak
     cd /loklak_server && ./gradlew build -x checkstyleMain -x checkstyleTest -x jacocoTestReport && \
     # change config file
     sed -i 's/^\(port.http=\).*/\180/;s/^\(port.https=\).*/\1443/;s/^\(upgradeInterval=\).*/\186400000000/' \
-        conf/config.properties && \
-    # remove OpenJDK 8 JDK and Ant
-    apk del openjdk8 git && \
-    # install OpenJDK 8 JRE without GUI support
-    apk add openjdk8-jre-base
+        conf/config.properties
 
 # set current working directory to loklak_server
 WORKDIR /loklak_server
